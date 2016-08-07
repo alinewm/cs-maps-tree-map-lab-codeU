@@ -73,7 +73,21 @@ public class MyTreeMap<K, V> implements Map<K, V> {
 		
 		// the actual search
         // TODO: Fill this in.
-        return null;
+		return recursiveFind(k, root);
+	}
+	
+	private Node recursiveFind(Comparable<? super K> target, Node node) {
+		if (node== null) {
+			return null;
+		}
+		int comparison = target.compareTo(node.key);
+		if (comparison==0) {
+			return node;
+		} else if (comparison > 0) {
+			return recursiveFind(target, node.right);
+		} else {
+			return recursiveFind(target, node.left);
+		}
 	}
 
 	/**
@@ -92,6 +106,24 @@ public class MyTreeMap<K, V> implements Map<K, V> {
 
 	@Override
 	public boolean containsValue(Object target) {
+		return recursiveContains(target, root);
+	}
+	
+	private boolean recursiveContains(Object target, Node node) {
+		if (node== null) {
+			return false;
+		}
+		if (target.equals(node.value)) {
+			return true;
+		} else {
+			if (node.left != null) {
+				return recursiveContains(target, node.left);
+			}
+			
+			if (node.right != null) {
+				return recursiveContains(target, node.right);
+			}
+		}
 		return false;
 	}
 
@@ -118,9 +150,30 @@ public class MyTreeMap<K, V> implements Map<K, V> {
 	public Set<K> keySet() {
 		Set<K> set = new LinkedHashSet<K>();
         // TODO: Fill this in.
-		return set;
+		return inOrder(root, set);
 	}
 
+	private Set<K> inOrder(Node node,Set<K> set) {
+		if (node.left!=null) {
+			inOrder(node.left, set);
+		}
+		set.add(node.key);
+
+		if (node.right!=null) {
+			inOrder(node.right, set);
+		}
+		
+		return set;
+//		if (node== null) {
+//			return set;
+//		} else {
+//			inOrder(node.left, set);
+//			set.add(node.key);
+//			inOrder(node.right, set);
+//		}
+//		return null;
+	}
+	
 	@Override
 	public V put(K key, V value) {
 		if (key == null) {
@@ -131,12 +184,39 @@ public class MyTreeMap<K, V> implements Map<K, V> {
 			size++;
 			return null;
 		}
-		return putHelper(root, key, value);
+		if (containsKey(key)) {
+			V oldValue = findNode(key).value;
+			findNode(key).value = value;
+			return oldValue; 
+		} else {
+			return putHelper(root, key, value);
+		}
+			
 	}
 
 	private V putHelper(Node node, K key, V value) {
         // TODO: Fill this in.
-        return null;
+		int comparison = ((Comparable<? super K>) key).compareTo(node.key);
+		
+		if (comparison > 0) {
+			if (node.right != null) {
+				return putHelper(node.right, key, value);
+			}
+			else {
+				node.right = new Node(key, value);
+				size++;
+				return null;
+			}
+		} else {
+			if (node.left != null) {
+				return putHelper(node.left, key, value);
+			}
+			else {
+				node.left = new Node(key, value);
+				size++;
+				return null; 
+			}
+		}
 	}
 
 	@Override
